@@ -174,11 +174,12 @@ cleanup;
                end
                ShowInstruction(7,0); % test starts
                TimeEndStim       = GetSecs;
-            elseif nTrial == 41 && part ~= 4 % Pause-Screen (not in Block 4 which only has 40 trials)
-               WaitSecs('UntilTime', TimeEndStim);
-               ShowInstruction(6,0); % pause, continues after 10 sec
-               ShowInstruction(7,0); % test starts
-               TimeEndStim       = GetSecs;      
+           % REMOVED: Mid-block pause
+           % elseif nTrial == 41 && part ~= 4 % Pause-Screen (not in Block 4 which only has 40 trials)
+           %   WaitSecs('UntilTime', TimeEndStim);
+           %   ShowInstruction(6,0); % pause, continues after 10 sec
+           %   ShowInstruction(7,0); % test starts
+           %   TimeEndStim       = GetSecs;      
             end
             
             % Get the variables that the Trial function needs. 
@@ -309,16 +310,53 @@ cleanup;
                end
 
                % Visual feedback (checkmark or X)
+               Screen('FillRect', p.ptb.w, p.stim.bg);
+               
                if correct == 1
                    % Draw green checkmark
-                   Screen('FillRect', p.ptb.w, p.stim.bg);
-                   Screen('TextSize', p.ptb.w, 100);
-                   DrawFormattedText(p.ptb.w, '✓', 'center', 'center', [0 255 0]);
+                   % Get screen center
+                   [xCenter, yCenter] = RectCenter(Screen('Rect', p.ptb.w));
+                   
+                   % Checkmark parameters
+                   checkSize = 80;
+                   lineWidth = 12;
+                   greenColor = [0 255 0];
+                   
+                   % Draw checkmark as two lines
+                   % First line: bottom-left to middle
+                   fromX1 = xCenter - checkSize/2;
+                   fromY1 = yCenter;
+                   toX1 = xCenter - checkSize/6;
+                   toY1 = yCenter + checkSize/2;
+                   Screen('DrawLine', p.ptb.w, greenColor, fromX1, fromY1, toX1, toY1, lineWidth);
+                   
+                   % Second line: middle to top-right
+                   fromX2 = toX1;
+                   fromY2 = toY1;
+                   toX2 = xCenter + checkSize/2;
+                   toY2 = yCenter - checkSize/2;
+                   Screen('DrawLine', p.ptb.w, greenColor, fromX2, fromY2, toX2, toY2, lineWidth);
+                   
                else
                    % Draw red X
-                   Screen('FillRect', p.ptb.w, p.stim.bg);
-                   Screen('TextSize', p.ptb.w, 100);
-                   DrawFormattedText(p.ptb.w, 'X', 'center', 'center', [255 0 0]);
+                   % Get screen center
+                   [xCenter, yCenter] = RectCenter(Screen('Rect', p.ptb.w));
+                   
+                   % X parameters
+                   xSize = 80;
+                   lineWidth = 12;
+                   redColor = [255 0 0];
+                   
+                   % Draw X as two diagonal lines
+                   % First diagonal: top-left to bottom-right
+                   Screen('DrawLine', p.ptb.w, redColor, ...
+                          xCenter - xSize/2, yCenter - xSize/2, ...
+                          xCenter + xSize/2, yCenter + xSize/2, lineWidth);
+                   
+                   % Second diagonal: top-right to bottom-left
+                   Screen('DrawLine', p.ptb.w, redColor, ...
+                          xCenter + xSize/2, yCenter - xSize/2, ...
+                          xCenter - xSize/2, yCenter + xSize/2, lineWidth);
                end
 
                TimeFeedbackOn = Screen('Flip', p.ptb.w, TimeResponseEnd, 0);
@@ -676,7 +714,7 @@ cleanup;
         p.duration.scene              = 45 * slack; % 0.75 sec; duration of scene cue
         p.duration.target             = 120 * slack; % 2.0 sec; duration of face (changed from 4.5s)
         p.duration.feedback           = 45 * slack; % 0.75; duration of feedback 'too slow!'
-        p.duration.responseID         = 90 * slack; % 1.5; duration response window ID task
+        p.duration.responseID         = 135 * slack; % 2.25; duration response window ID task
         p.duration.ITI                = struct('ITI_duration', {p.stim.info(:).ITI_duration})'; %
         p.duration.ITI                = struct2cell(p.duration.ITI);
         p.duration.ISI                = struct('ISI_duration', {p.stim.info(:).ISI_duration})'; % 0.5 sec
